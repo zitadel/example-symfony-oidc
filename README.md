@@ -18,7 +18,7 @@ composer install
 ```
 
 At this point you might want to start a [`xdebug` client](https://xdebug.org/docs/step_debug#clients).
-This is not required, but Sympony might complain in the following steps that it can't connect to a `xdebug` client.
+This is not required, but php might complain in the following steps that it can't connect to a `xdebug` client.
 An example [`launch.json``](.vscode/launch.json) file has been provided for VSCode. Use the "Listen for Xdebug" option.
 
 You can check the application environment with:
