@@ -24,8 +24,15 @@ An example [`launch.json``](.vscode/launch.json) file has been provided for VSCo
 You can check the application environment with:
 
 ```bash
-php bin/console about
+bin/console about
 ```
+
+Create a local sqlite database (stored in `./var`).:
+
+```bash
+bin/console doctrine:database:create
+```
+
 
 And run the development server:
 

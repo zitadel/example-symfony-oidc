@@ -26,6 +26,18 @@
             "migrations/.gitignore"
         ]
     },
+    "drenso/symfony-oidc-bundle": {
+        "version": "2.13",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "2.0",
+            "ref": "e2b975158d940a191f48e3ff2c59108a1d7225e6"
+        },
+        "files": [
+            "config/packages/drenso_oidc.yaml"
+        ]
+    },
     "phpunit/phpunit": {
         "version": "9.6",
         "recipe": {
