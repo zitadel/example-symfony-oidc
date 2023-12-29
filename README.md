@@ -31,8 +31,8 @@ Create a local sqlite database (stored in `./var`).:
 
 ```bash
 bin/console doctrine:database:create
+bin/console doctrine:migrations:migrate
 ```
-
 
 And run the development server:
 
