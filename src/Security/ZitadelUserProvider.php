@@ -5,6 +5,7 @@ namespace App\Security;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use Drenso\OidcBundle\Model\OidcUserData;
 use Drenso\OidcBundle\Security\UserProvider\OidcUserProviderInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -14,8 +15,17 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 define("ZITADEL_ROLES_CLAIM", 'urn:zitadel:iam:org:project:roles');
 
-class ZitadelUserProvider extends UserRepository implements UserProviderInterface, OidcUserProviderInterface
+class ZitadelUserProvider implements UserProviderInterface, OidcUserProviderInterface
 {
+    protected EntityManagerInterface $em;
+    protected UserRepository $repo;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->repo = $entityManager->getRepository(User::class);
+        $this->em = $entityManager;
+    }
+
     /**
      * Symfony calls this method if you use features like switch_user
      * or remember_me. If you're not using these features, you do not
@@ -28,7 +38,7 @@ class ZitadelUserProvider extends UserRepository implements UserProviderInterfac
         // Load a User object from your data source or throw UserNotFoundException.
         // The $identifier argument is whatever value is being returned by the
         // getUserIdentifier() method in your User class.
-        $user = $this->findOneBySub($identifier);
+        $user = $this->repo->findOneBySub($identifier);
         if (!$user) {
             throw new UserNotFoundException(sprintf('User with id "%s" not found'));
         }
@@ -54,7 +64,7 @@ class ZitadelUserProvider extends UserRepository implements UserProviderInterfac
 
         // Return a User object after making sure its data is "fresh".
         // Or throw a UserNotFoundException if the user no longer exists.
-        $user = $this->find($user->getId());
+        $user = $this->repo->find($user->getId());
         if (!$user) {
             throw new UserNotFoundException(sprintf('User with id "%s" not found'));
         }
@@ -84,25 +94,24 @@ class ZitadelUserProvider extends UserRepository implements UserProviderInterfac
 
     private function updateUserEntity(User &$user, OidcUserData $userData)
     {
-        $user->setSub($this->getSub());
+        $user->setSub($userData->getSub());
         $user->setRoles($this->parseZitadelRoles($userData->getUserDataArray(ZITADEL_ROLES_CLAIM)));
-        $user->setDisplayName($this->getDisplayName());
-        $user->setEmail($this->getEmail());
-        $user->setEmailVerified($this->getEmailVerified());
+        $user->setDisplayName($userData->getDisplayName());
+        $user->setEmail($userData->getEmail());
+        $user->setEmailVerified($userData->getEmailVerified());
         $user->setUpdatedAt(new DateTimeImmutable());
     }
 
     public function ensureUserExists(string $userIdentifier, OidcUserData $userData)
     {
-        $entityManager = $this->getEntityManager();
-        $user = $this->findOneBySub($userIdentifier);
+        $user = $this->repo->findOneBySub($userIdentifier);
         if (!$user) {
             $user = new User();
             $user->setCreatedAt(new DateTimeImmutable());
-            $entityManager->persist($user);
+            $this->em->persist($user);
         }
         $this->updateUserEntity($user, $userData);
-        $entityManager->flush();
+        $this->em->flush();
     }
 
     public function loadOidcUser(string $userIdentifier): UserInterface

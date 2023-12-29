@@ -2,17 +2,17 @@ security:
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         # used to reload user from session & other features (e.g. switch_user)
-        oidc_user_provider:
-            entity:
-                class: App\Security\ZitadelUserProvider
-                property: sub
+        zitadel_user_provider:
+            id: App\Security\ZitadelUserProvider
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
             lazy: true
-            provider: oidc_user_provider
+            provider: zitadel_user_provider
+            pattern: ^/
+            oidc: ~
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
