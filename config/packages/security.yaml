@@ -4,7 +4,7 @@ security:
         # used to reload user from session & other features (e.g. switch_user)
         oidc_user_provider:
             entity:
-                class: App\Security\UserProvider
+                class: App\Security\ZitadelUserProvider
                 property: sub
     firewalls:
         dev:

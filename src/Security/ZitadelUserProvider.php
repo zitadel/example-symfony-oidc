@@ -4,6 +4,7 @@ namespace App\Security;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use DateTimeImmutable;
 use Drenso\OidcBundle\Model\OidcUserData;
 use Drenso\OidcBundle\Security\UserProvider\OidcUserProviderInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -11,7 +12,9 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
-class UserProvider extends UserRepository implements UserProviderInterface, OidcUserProviderInterface
+define("ZITADEL_ROLES_CLAIM", 'urn:zitadel:iam:org:project:roles');
+
+class ZitadelUserProvider extends UserRepository implements UserProviderInterface, OidcUserProviderInterface
 {
     /**
      * Symfony calls this method if you use features like switch_user
@@ -66,15 +69,39 @@ class UserProvider extends UserRepository implements UserProviderInterface, Oidc
         return User::class === $class || is_subclass_of($class, User::class);
     }
 
+    private function parseZitadelRoles(array $roles): array
+    {
+        $newRoles = [];
+        foreach ($roles as &$role) {
+            $role = strtoupper($role);
+            if (!str_starts_with($role, 'ROLE_')) {
+                $role = 'ROLE_' . $role;
+            }
+            array_push($newRoles, $role);
+        }
+        return $newRoles;
+    }
+
+    private function updateUserEntity(User &$user, OidcUserData $userData)
+    {
+        $user->setSub($this->getSub());
+        $user->setRoles($this->parseZitadelRoles($userData->getUserDataArray(ZITADEL_ROLES_CLAIM)));
+        $user->setDisplayName($this->getDisplayName());
+        $user->setEmail($this->getEmail());
+        $user->setEmailVerified($this->getEmailVerified());
+        $user->setUpdatedAt(new DateTimeImmutable());
+    }
+
     public function ensureUserExists(string $userIdentifier, OidcUserData $userData)
     {
         $entityManager = $this->getEntityManager();
         $user = $this->findOneBySub($userIdentifier);
         if (!$user) {
             $user = new User();
-            $user->setSub($userIdentifier);
+            $user->setCreatedAt(new DateTimeImmutable());
             $entityManager->persist($user);
         }
+        $this->updateUserEntity($user, $userData);
         $entityManager->flush();
     }
 
