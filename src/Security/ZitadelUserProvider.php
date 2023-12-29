@@ -8,14 +8,17 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Drenso\OidcBundle\Model\OidcUserData;
 use Drenso\OidcBundle\Security\UserProvider\OidcUserProviderInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
+define("ZITADEL_SCOPES", array("openid", "profile", "email", "urn:zitadel:iam:org:projects:roles"));
 define("ZITADEL_ROLES_CLAIM", 'urn:zitadel:iam:org:project:roles');
 
-class ZitadelUserProvider implements UserProviderInterface, OidcUserProviderInterface
+class ZitadelUserProvider implements UserProviderInterface, OidcUserProviderInterface, LoggerAwareInterface
 {
     protected EntityManagerInterface $em;
     protected UserRepository $repo;
@@ -24,6 +27,13 @@ class ZitadelUserProvider implements UserProviderInterface, OidcUserProviderInte
     {
         $this->repo = $entityManager->getRepository(User::class);
         $this->em = $entityManager;
+    }
+
+    private LoggerInterface $logger;
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 
     /**
@@ -81,20 +91,26 @@ class ZitadelUserProvider implements UserProviderInterface, OidcUserProviderInte
 
     private function parseZitadelRoles(array $roles): array
     {
-        $newRoles = [];
-        foreach ($roles as &$role) {
+        $symfonyRoles = [];
+        foreach ($roles as $role => $data) {
             $role = strtoupper($role);
             if (!str_starts_with($role, 'ROLE_')) {
                 $role = 'ROLE_' . $role;
             }
-            array_push($newRoles, $role);
+            array_push($symfonyRoles, $role);
         }
-        return $newRoles;
+        return $symfonyRoles;
     }
 
     private function updateUserEntity(User &$user, OidcUserData $userData)
     {
         $user->setSub($userData->getSub());
+
+        $this->logger->debug("OIDC User Data", [
+            'email' => $userData->getEmail(),
+            'roles' => $userData->getUserData(ZITADEL_ROLES_CLAIM),
+        ]);
+
         $user->setRoles($this->parseZitadelRoles($userData->getUserDataArray(ZITADEL_ROLES_CLAIM)));
         $user->setDisplayName($userData->getDisplayName());
         $user->setEmail($userData->getEmail());

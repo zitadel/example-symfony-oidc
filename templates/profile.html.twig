@@ -1,0 +1,23 @@
+{% extends "base.html.twig" %}
+{% block body %}
+<h1>Welcome back, {{ app.user.displayName }}!</h1>
+<p>
+    You are viewing the authenticated profile page.
+    This means you succesfully logged-in using OIDC!
+</p>
+<h2>Profile information</h2>
+<ul>
+    <li>Subject: {{ app.user.sub }}</li>
+    <li>Email: {{ app.user.email }}, verified: {{ app.user.emailVerified }}</li>
+</ul>
+<h2>Roles</h2>
+<p>
+    Role names are converted from ZITADEL to Symfony format. All upper-cased and prefixed with <code>ROLE_</code>.
+    <code>ROLE_USER</code> is the default role set in Symfony, even if there are no ZITADEL roles returned.
+</p>
+<ul>
+    {% for role in app.user.roles %}
+    <li><code>{{ role }}</code></li>
+    {% endfor %}
+</ul>
+{% endblock %}

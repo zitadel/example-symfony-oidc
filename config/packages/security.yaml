@@ -12,7 +12,10 @@ security:
             lazy: true
             provider: zitadel_user_provider
             pattern: ^/
-            oidc: ~
+            oidc:
+                enable_end_session_listener: true
+            logout:
+                path: /logout
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -24,4 +27,4 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/profile, roles: ROLE_USER }

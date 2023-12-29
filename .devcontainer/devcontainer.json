@@ -7,6 +7,9 @@
         // Path is relative to the devcontainer.json file.
         "dockerfile": "Dockerfile"
     },
+	"runArgs": [
+		"--network=host"
+	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
 		8000
@@ -20,7 +23,8 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"ms-azuretools.vscode-docker"
+				"ms-azuretools.vscode-docker",
+				"rholdos.twig-language-support"
 			]
 		}
 	}

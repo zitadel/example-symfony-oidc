@@ -2,4 +2,16 @@
 {% block body %}
 <h1>Home</h1>
 <p>You are viewing the public homepage of the ZITADEL Symfony example web app.</p>
+
+<h2>Authenticated pages</h2>
+<p>
+    Browsing to one of the following pages will trigger OIDC authentication flow.
+</p>
+<ul>
+    <li>
+        <a href="/profile">profile</a>:
+        View profile data of the authenticated user.
+        No special roles required.
+    </li>
+</ul>
 {% endblock %}
