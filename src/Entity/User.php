@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -74,6 +75,11 @@ class User implements UserInterface
         return array_unique($roles);
     }
 
+    public function implodeRoles(): string
+    {
+        return implode(', ', $this->getRoles());
+    }
+
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
@@ -133,6 +139,11 @@ class User implements UserInterface
         return $this->created_at;
     }
 
+    public function formatCreatedAt(): string
+    {
+        return $this->created_at->format(DateTimeInterface::W3C);
+    }
+
     public function setCreatedAt(\DateTimeImmutable $created_at): static
     {
         $this->created_at = $created_at;
@@ -143,6 +154,11 @@ class User implements UserInterface
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updated_at;
+    }
+
+    public function formatUpdatedAt(): string
+    {
+        return $this->updated_at->format(DateTimeInterface::W3C);
     }
 
     public function setUpdatedAt(\DateTimeImmutable $updated_at): static

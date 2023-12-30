@@ -1,0 +1,37 @@
+{% extends "base.html.twig" %}
+{% block body %}
+<h1>Welcome back, {{ app.user.displayName }}!</h1>
+<p>
+    You are viewing the registered users list page.
+    This means you succesfully logged-in using OIDC!
+    View your <a href="/profile">profile</a> page.
+</p>
+<p>
+    Click here to <a href="/logout">logout</a>.
+</p>
+<table>
+    <tr>
+        <th>id</th>
+        <th>sub</th>
+        <th>roles</th>
+        <th>display name</th>
+        <th>email</th>
+        <th>email verified</th>
+        <th>created at</th>
+        <th>updated at</th>
+    </tr>
+    {% for user in users %}
+    <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.sub }}</td>
+        <td>{{ user.implodeRoles }}</td>
+        <td>{{ user.displayName }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.emailVerified }}</td>
+        <td>{{ user.formatCreatedAt }}</td>
+        <td>{{ user.formatUpdatedAt }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}
