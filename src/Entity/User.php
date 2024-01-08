@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\Table(name: '`user`')]
 class User implements UserInterface
 {
     #[ORM\Id]
@@ -22,13 +23,13 @@ class User implements UserInterface
     private array $roles = [];
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $displayName = null;
+    private ?string $display_name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $email = null;
 
     #[ORM\Column(nullable: true)]
-    private ?bool $emailVerified = null;
+    private ?bool $email_verified = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $created_at = null;
@@ -75,11 +76,6 @@ class User implements UserInterface
         return array_unique($roles);
     }
 
-    public function implodeRoles(): string
-    {
-        return implode(', ', $this->getRoles());
-    }
-
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
@@ -94,18 +90,16 @@ class User implements UserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
-
-        // TODO: can we delete tokens here?
     }
 
     public function getDisplayName(): ?string
     {
-        return $this->displayName;
+        return $this->display_name;
     }
 
-    public function setDisplayName(?string $displayName): static
+    public function setDisplayName(?string $display_name): static
     {
-        $this->displayName = $displayName;
+        $this->display_name = $display_name;
 
         return $this;
     }
@@ -124,12 +118,12 @@ class User implements UserInterface
 
     public function isEmailVerified(): ?bool
     {
-        return $this->emailVerified;
+        return $this->email_verified;
     }
 
-    public function setEmailVerified(?bool $emailVerified): static
+    public function setEmailVerified(?bool $email_verified): static
     {
-        $this->emailVerified = $emailVerified;
+        $this->email_verified = $email_verified;
 
         return $this;
     }
@@ -137,11 +131,6 @@ class User implements UserInterface
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->created_at;
-    }
-
-    public function formatCreatedAt(): string
-    {
-        return $this->created_at->format(DateTimeInterface::W3C);
     }
 
     public function setCreatedAt(\DateTimeImmutable $created_at): static
@@ -155,16 +144,35 @@ class User implements UserInterface
     {
         return $this->updated_at;
     }
-
-    public function formatUpdatedAt(): string
-    {
-        return $this->updated_at->format(DateTimeInterface::W3C);
-    }
-
+    
     public function setUpdatedAt(\DateTimeImmutable $updated_at): static
     {
         $this->updated_at = $updated_at;
-
+        
         return $this;
+    }
+
+    /**
+     * Convert roles to string for use in a template.
+     */
+    public function implodeRoles(): string
+    {
+        return implode(', ', $this->getRoles());
+    }
+
+    /**
+     * Format timestamp for use in a template.
+     */
+    public function formatCreatedAt(): string
+    {
+        return $this->created_at->format(DateTimeInterface::W3C);
+    }
+
+    /**
+     * Format timestamp for use in a template.
+     */
+    public function formatUpdatedAt(): string
+    {
+        return $this->updated_at->format(DateTimeInterface::W3C);
     }
 }

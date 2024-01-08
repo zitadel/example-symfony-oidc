@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Security\ZitadelUserProvider;
 use Drenso\OidcBundle\OidcClientInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -20,6 +21,6 @@ class LoginController extends AbstractController
     public function surfconext(OidcClientInterface $oidcClient): RedirectResponse
     {
         // Redirect to authorization @ OIDC provider
-        return $oidcClient->generateAuthorizationRedirect(scopes: ZITADEL_SCOPES);
+        return $oidcClient->generateAuthorizationRedirect(scopes: ZitadelUserProvider::SCOPES);
     }
 }

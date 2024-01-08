@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Drenso\OidcBundle\Exception\OidcException;
 use Drenso\OidcBundle\Model\OidcUserData;
 use Drenso\OidcBundle\Security\UserProvider\OidcUserProviderInterface;
 use Psr\Log\LoggerAwareInterface;
@@ -14,9 +15,6 @@ use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
-
-define("ZITADEL_SCOPES", array("openid", "profile", "email", "urn:zitadel:iam:org:projects:roles"));
-define("ZITADEL_ROLES_CLAIM", 'urn:zitadel:iam:org:project:roles');
 
 class ZitadelUserProvider implements UserProviderInterface, OidcUserProviderInterface, LoggerAwareInterface
 {
@@ -31,6 +29,9 @@ class ZitadelUserProvider implements UserProviderInterface, OidcUserProviderInte
 
     private LoggerInterface $logger;
 
+    /**
+     * @see LoggerAwareInterface
+     */
     public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
@@ -89,6 +90,10 @@ class ZitadelUserProvider implements UserProviderInterface, OidcUserProviderInte
         return User::class === $class || is_subclass_of($class, User::class);
     }
 
+    /**
+     * Parse lower case plain role names from zitadel to the
+     * Symfony `ROLE_USER` format.
+     */
     private function parseZitadelRoles(array $roles): array
     {
         $symfonyRoles = [];
@@ -102,34 +107,62 @@ class ZitadelUserProvider implements UserProviderInterface, OidcUserProviderInte
         return $symfonyRoles;
     }
 
+    /**
+     * Zitadel reserved roles claim.
+     * See https://zitadel.com/docs/apis/openidoauth/claims#reserved-claims for other available claims.
+     */
+    const ROLES_CLAIM = 'urn:zitadel:iam:org:project:roles';
+    
+    /**
+     * Requested scopes. Adjust to your application's needs.
+     * See https://zitadel.com/docs/apis/openidoauth/scopes for all available scopes. 
+     */
+    const SCOPES = array('openid', 'profile', 'email', self::ROLES_CLAIM);
+
+    /**
+     * Copy Zitadel User Info to the Symfony User Entity.
+     * The available info depends on the scopes defined in the SCOPES constant above.
+     */
     private function updateUserEntity(User &$user, OidcUserData $userData)
     {
         $user->setSub($userData->getSub());
-
-        $this->logger->debug("OIDC User Data", [
-            'email' => $userData->getEmail(),
-            'roles' => $userData->getUserData(ZITADEL_ROLES_CLAIM),
-        ]);
-
-        $user->setRoles($this->parseZitadelRoles($userData->getUserDataArray(ZITADEL_ROLES_CLAIM)));
+        $user->setRoles($this->parseZitadelRoles($userData->getUserDataArray(self::ROLES_CLAIM)));
         $user->setDisplayName($userData->getDisplayName());
         $user->setEmail($userData->getEmail());
         $user->setEmailVerified($userData->getEmailVerified());
         $user->setUpdatedAt(new DateTimeImmutable());
     }
 
+    /**
+     * Create or update an user with User Info from Zitadel.
+     * 
+     * @see OidcUserProviderInterface
+     */
     public function ensureUserExists(string $userIdentifier, OidcUserData $userData)
     {
-        $user = $this->repo->findOneBySub($userIdentifier);
-        if (!$user) {
-            $user = new User();
-            $user->setCreatedAt(new DateTimeImmutable());
-            $this->em->persist($user);
+        $this->logger->debug("OIDC User Data", [
+            'sub' => $userData->getSub(),
+            'display_name' => $userData->getDisplayName(),
+            'roles' => $userData->getUserData(self::ROLES_CLAIM),
+        ]);
+
+        try {
+            $user = $this->repo->findOneBySub($userIdentifier);
+            if (!$user) {
+                $user = new User();
+                $user->setCreatedAt(new DateTimeImmutable());
+                $this->em->persist($user);
+            }
+            $this->updateUserEntity($user, $userData);
+            $this->em->flush();
+        } catch (\Throwable $th) {
+            throw new OidcException('cannot create user', previous: $th);
         }
-        $this->updateUserEntity($user, $userData);
-        $this->em->flush();
     }
 
+    /**
+     * @see OidcUserProviderInterface
+     */
     public function loadOidcUser(string $userIdentifier): UserInterface
     {
         return $this->loadUserByIdentifier($userIdentifier);
