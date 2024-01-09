@@ -26,6 +26,9 @@ class User implements UserInterface
     private ?string $display_name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    private ?string $full_name = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $email = null;
 
     #[ORM\Column(nullable: true)]
@@ -104,6 +107,18 @@ class User implements UserInterface
         return $this;
     }
 
+    public function getFullName(): ?string
+    {
+        return $this->full_name;
+    }
+
+    public function setFullName(?string $full_name): static
+    {
+        $this->full_name = $full_name;
+
+        return $this;
+    }
+
     public function getEmail(): ?string
     {
         return $this->email;
@@ -144,11 +159,11 @@ class User implements UserInterface
     {
         return $this->updated_at;
     }
-    
+
     public function setUpdatedAt(\DateTimeImmutable $updated_at): static
     {
         $this->updated_at = $updated_at;
-        
+
         return $this;
     }
 

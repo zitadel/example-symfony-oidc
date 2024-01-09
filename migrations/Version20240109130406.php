@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20240108121704 extends AbstractMigration
+final class Version20240109130406 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -21,7 +21,7 @@ final class Version20240108121704 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE TABLE "user" (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, sub VARCHAR(180) NOT NULL, roles CLOB NOT NULL --(DC2Type:json)
-        , display_name VARCHAR(255) DEFAULT NULL, email VARCHAR(255) DEFAULT NULL, email_verified BOOLEAN DEFAULT NULL, created_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
+        , display_name VARCHAR(255) DEFAULT NULL, full_name VARCHAR(255) DEFAULT NULL, email VARCHAR(255) DEFAULT NULL, email_verified BOOLEAN DEFAULT NULL, created_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
         , updated_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
         )');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_8D93D649580282DC ON "user" (sub)');

@@ -1,6 +1,6 @@
 {% extends "base.html.twig" %}
 {% block body %}
-<h1>Welcome back, {{ app.user.displayName }}!</h1>
+<h1>Welcome back, {{ app.user.fullName }}!</h1>
 <p>
     You are viewing the authenticated profile page.
     This means you succesfully logged-in using OIDC!
@@ -11,6 +11,7 @@
 <h2>Profile information</h2>
 <ul>
     <li>Subject: {{ app.user.sub }}</li>
+    <li>Preferred username: {{ app.user.displayName }}</li>
     <li>Email: {{ app.user.email }}, verified: {{ app.user.emailVerified }}</li>
 </ul>
 <h2>Roles</h2>

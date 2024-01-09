@@ -75,11 +75,11 @@ class ZitadelUserProvider implements UserProviderInterface, OidcUserProviderInte
 
         // Return a User object after making sure its data is "fresh".
         // Or throw a UserNotFoundException if the user no longer exists.
-        $user = $this->repo->find($user->getId());
+        $refreshedUser = $this->repo->find($user->getId());
         if (!$user) {
-            throw new UserNotFoundException(sprintf('User with id "%s" not found'));
+            throw new UserNotFoundException(sprintf('User with id "%s" not found', $user->getId()));
         }
-        return $user;
+        return $refreshedUser;
     }
 
     /**
@@ -128,6 +128,7 @@ class ZitadelUserProvider implements UserProviderInterface, OidcUserProviderInte
         $user->setSub($userData->getSub());
         $user->setRoles($this->parseZitadelRoles($userData->getUserDataArray(self::ROLES_CLAIM)));
         $user->setDisplayName($userData->getDisplayName());
+        $user->setFullName($userData->getFullName());
         $user->setEmail($userData->getEmail());
         $user->setEmailVerified($userData->getEmailVerified());
         $user->setUpdatedAt(new DateTimeImmutable());
@@ -143,6 +144,7 @@ class ZitadelUserProvider implements UserProviderInterface, OidcUserProviderInte
         $this->logger->debug("OIDC User Data", [
             'sub' => $userData->getSub(),
             'display_name' => $userData->getDisplayName(),
+            'full_name' => $userData->getFullName(),
             'roles' => $userData->getUserData(self::ROLES_CLAIM),
         ]);
 
