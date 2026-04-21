@@ -5,3 +5,4 @@ controllers:
     type: attribute
 login_check:
     path: /login_check
+    controller: App\Controller\LoginController::loginCheck

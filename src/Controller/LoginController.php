@@ -23,4 +23,9 @@ class LoginController extends AbstractController
         // Redirect to authorization @ OIDC provider
         return $oidcClient->generateAuthorizationRedirect(scopes: ZitadelUserProvider::SCOPES);
     }
+
+    public function loginCheck(): RedirectResponse
+    {
+        return $this->redirectToRoute('login');
+    }
 }
